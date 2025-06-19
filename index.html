@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Venue Timetable</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="loginForm" class="login-form">
+            <h2>Welcome to Venue Booking</h2>
+            <input type="text" id="userIdInput" placeholder="Enter your User ID" maxlength="20">
+            <button class="login-btn" onclick="login()">Login</button>
+        </div>
+
+        <div id="mainApp" style="display: none;">
+            <div class="header">
+                <div class="filter-section">
+                    <label for="venueFilter">Filter Field:</label>
+                    <select id="venueFilter" onchange="filterTable()">
+                        <option value="">All Fields</option>
+                    </select>
+                    
+                    <label for="timeFilter">Filter Time:</label>
+                    <select id="timeFilter" onchange="filterTable()">
+                        <option value="">All Times</option>
+                    </select>
+
+                    <button class="filter-btn" onclick="filterUpcoming()">Filter Upcoming Available</button>
+                </div>
+                
+                <div class="user-section">
+                    <div class="user-info">
+                        <div class="user-id" id="userDisplay"></div>
+                        <div class="current-time" id="currentTime"></div>
+                    </div>
+                    <button class="message-board-btn" onclick="toggleMessageBoard()">📢 Messages</button>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="timetable-container">
+                    <table class="timetable" id="timetable">
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+                        <span>Booked by Others</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);"></div>
+                        <span>Your Booking</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);"></div>
+                        <span>Fully Booked</span>
+                    </div>
+                     <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(to top, #ccc 0%, transparent 0%);"></div>
+                        <span>Time Passed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageBoardOverlay" class="message-board-overlay" onclick="closeMessageBoard()">
+        <div class="message-board" onclick="event.stopPropagation()">
+            <div class="message-board-header">
+                <div class="message-board-title">📢 Message Board</div>
+                <button class="close-btn" onclick="closeMessageBoard()">✕</button>
+            </div>
+            <div class="message-board-content" id="messageBoardContent">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
