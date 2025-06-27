@@ -11,9 +11,19 @@
         <div id="loginForm" class="login-form">
             <h2>Welcome to Venue Booking</h2>
             <input type="text" id="userIdInput" placeholder="Enter your User ID" maxlength="20">
+            
+            <div class="admin-checkbox">
+                <label for="adminCheck">
+                    <input type="checkbox" id="adminCheck">
+                    <span class="checkmark"></span>
+                    Administrator Login
+                </label>
+            </div>
+            
             <button class="login-btn" onclick="login()">Login</button>
         </div>
 
+        <!-- Regular User App -->
         <div id="mainApp" style="display: none;">
             <div class="header">
                 <div class="filter-section">
@@ -65,23 +75,110 @@
                         <div class="legend-color" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);"></div>
                         <span>Fully Booked</span>
                     </div>
-                     <div class="legend-item">
+                    <div class="legend-item">
                         <div class="legend-color" style="background: linear-gradient(to top, #ccc 0%, transparent 0%);"></div>
                         <span>Time Passed</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);"></div>
+                        <span>Venue Closed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Administrator App -->
+        <div id="adminApp" style="display: none;">
+            <div class="header">
+                <div class="admin-title">
+                    <h2>🔧 Administrator Panel</h2>
+                </div>
+                
+                <div class="user-section">
+                    <div class="user-info">
+                        <div class="user-id" id="adminUserDisplay"></div>
+                        <div class="current-time" id="adminCurrentTime"></div>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- Venue Management Section -->
+                <div class="admin-section">
+                    <h3>🏟️ Venue Management</h3>
+                    <p class="section-description">Open or close venues for booking</p>
+                    <div id="venueStatusContainer" class="venue-status-grid"></div>
+                </div>
+
+                <!-- Message Board Management -->
+                <div class="admin-section">
+                    <h3>📢 Message Board Management</h3>
+                    <p class="section-description">Manage messages displayed to users</p>
+                    <div class="admin-actions">
+                        <button onclick="showAdminMessageBoard()" class="admin-btn primary">Manage Messages</button>
+                        <button onclick="addNewMessage()" class="admin-btn">Add New Message</button>
+                    </div>
+                </div>
+
+                <!-- User Membership Management -->
+                <div class="admin-section">
+                    <h3>👥 User Membership Management</h3>
+                    <p class="section-description">Manage user memberships and expiry dates</p>
+                    <div class="admin-actions">
+                        <button onclick="addNewUser()" class="admin-btn">Add New User</button>
+                    </div>
+                    <div id="userMembershipContainer" class="user-membership-grid"></div>
+                </div>
+
+                <!-- QR Code Registration -->
+                <div class="admin-section">
+                    <h3>📱 Registration QR Code</h3>
+                    <p class="section-description">Generate QR code for new member registration</p>
+                    <div class="admin-actions">
+                        <button onclick="showQRCode()" class="admin-btn primary">Generate QR Code</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Regular Message Board Modal -->
     <div id="messageBoardOverlay" class="message-board-overlay" onclick="closeMessageBoard()">
         <div class="message-board" onclick="event.stopPropagation()">
             <div class="message-board-header">
                 <div class="message-board-title">📢 Message Board</div>
                 <button class="close-btn" onclick="closeMessageBoard()">✕</button>
             </div>
-            <div class="message-board-content" id="messageBoardContent">
-                </div>
+            <div class="message-board-content" id="messageBoardContent"></div>
+        </div>
+    </div>
+
+    <!-- Admin Message Board Modal -->
+    <div id="adminMessageBoardOverlay" class="message-board-overlay" onclick="closeAdminMessageBoard()">
+        <div class="message-board admin-message-board" onclick="event.stopPropagation()">
+            <div class="message-board-header">
+                <div class="message-board-title">📢 Manage Messages</div>
+                <button class="close-btn" onclick="closeAdminMessageBoard()">✕</button>
+            </div>
+            <div class="message-board-content" id="adminMessageBoardContent"></div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrCodeOverlay" class="qr-overlay" onclick="closeQRCode()">
+        <div class="qr-modal" onclick="event.stopPropagation()">
+            <div class="qr-header">
+                <h3>📱 Registration QR Code</h3>
+                <button class="close-btn" onclick="closeQRCode()">✕</button>
+            </div>
+            <div class="qr-content">
+                <p>Scan this QR code to access the registration form:</p>
+                <img id="qrCodeImage" src="" alt="Registration QR Code" class="qr-image">
+                <p class="qr-instructions">
+                    Users can scan this code to get the registration form for official or temporary membership.
+                </p>
+            </div>
         </div>
     </div>
 
