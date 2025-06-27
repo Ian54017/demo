@@ -31,6 +31,18 @@ let messages = [
     }
 ];
 
+// Function to get user initials
+function getUserInitials(username) {
+    if (!username) return '';
+    
+    const words = username.trim().split(/\s+/);
+    if (words.length === 1) {
+        return words[0].substring(0, 2).toUpperCase();
+    } else {
+        return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('');
+    }
+}
+
 // Initialize booking data
 function initializeBookingData() {
     venues.forEach(venue => {
@@ -205,6 +217,7 @@ function createCellContent(venue, time) {
     
     const capacity = venueCapacities[venue];
     const booked = bookingData[venue][time].length;
+    const bookedUsers = bookingData[venue][time];
     const isUserBooked = userBooking && userBooking.venue === venue && userBooking.time === time;
     const isFull = booked >= capacity;
 
@@ -239,6 +252,37 @@ function createCellContent(venue, time) {
     capacityInfo.className = 'capacity-info';
     capacityInfo.textContent = `${booked}/${capacity}`;
     cellDiv.appendChild(capacityInfo);
+    
+    // User initials display
+    if (booked > 0) {
+        const initialsContainer = document.createElement('div');
+        initialsContainer.className = 'initials-container';
+        
+        bookedUsers.forEach((user, index) => {
+            const initialsCircle = document.createElement('div');
+            initialsCircle.className = 'user-initial-circle';
+            
+            // Highlight current user's circle
+            if (user === currentUser) {
+                initialsCircle.classList.add('current-user');
+            }
+            
+            initialsCircle.textContent = getUserInitials(user);
+            initialsCircle.title = user; // Tooltip showing full username
+            
+            // Position circles to avoid overlap
+            const angle = (index * 360) / Math.max(capacity, booked);
+            const radius = 15;
+            const x = Math.cos((angle * Math.PI) / 180) * radius;
+            const y = Math.sin((angle * Math.PI) / 180) * radius;
+            
+            initialsCircle.style.transform = `translate(${x}px, ${y}px)`;
+            
+            initialsContainer.appendChild(initialsCircle);
+        });
+        
+        cellDiv.appendChild(initialsContainer);
+    }
     
     // Participants info
     if (booked > 0) {
