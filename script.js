@@ -15,10 +15,33 @@ const venueCapacities = {
     'Field 9': 2
 };
 
+// Venue status (open/closed)
+let venueStatus = {
+    'Field 1': true,
+    'Field 2': true,
+    'Field 3': true,
+    'Field 4': true,
+    'Field 5': true,
+    'Field 6': true,
+    'Field 7': true,
+    'Field 8': true,
+    'Field 9': true
+};
+
+// User membership data
+let userMembership = {
+    'Official Member A': { type: 'official', expiry: new Date(2025, 11, 31) }, // End of this year
+    'Temporary Member A': { type: 'temporary', expiry: new Date() } // End of today
+};
+
+// Set temporary member expiry to end of today
+userMembership['Temporary Member A'].expiry.setHours(23, 59, 59, 999);
+
 // Booking data: venue -> time -> [users]
 let bookingData = {};
 let currentUser = '';
 let userBooking = null; // {venue: '', time: ''}
+let isAdmin = false;
 
 // Message board data
 let messages = [
@@ -56,12 +79,23 @@ function initializeBookingData() {
 // Login function
 function login() {
     const userId = document.getElementById('userIdInput').value.trim();
+    const adminCheck = document.getElementById('adminCheck').checked;
+    
     if (userId) {
         currentUser = userId;
-        document.getElementById('userDisplay').textContent = `User: ${userId}`;
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        initializeApp();
+        isAdmin = adminCheck;
+        
+        if (isAdmin) {
+            document.getElementById('adminUserDisplay').textContent = `Administrator: ${userId}`;
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminApp').style.display = 'block';
+            initializeAdminApp();
+        } else {
+            document.getElementById('userDisplay').textContent = `User: ${userId}`;
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            initializeApp();
+        }
     } else {
         alert('Please enter a valid User ID');
     }
@@ -71,10 +105,234 @@ function login() {
 function logout() {
     currentUser = '';
     userBooking = null;
+    isAdmin = false;
     document.getElementById('userIdInput').value = '';
+    document.getElementById('adminCheck').checked = false;
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'none';
     closeMessageBoard();
+    closeAdminModals();
+}
+
+// Admin App Functions
+function initializeAdminApp() {
+    loadVenueStatus();
+    loadUserMembership();
+    updateAdminCurrentTime();
+    setInterval(updateAdminCurrentTime, 1000);
+}
+
+function updateAdminCurrentTime() {
+    const now = new Date();
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const dateStr = now.toLocaleDateString(undefined, dateOptions);
+    const timeStr = now.toLocaleTimeString(undefined, timeOptions);
+    document.getElementById('adminCurrentTime').textContent = `${dateStr} ${timeStr}`;
+}
+
+// Venue Management
+function loadVenueStatus() {
+    const container = document.getElementById('venueStatusContainer');
+    container.innerHTML = '';
+    
+    venues.forEach(venue => {
+        const venueDiv = document.createElement('div');
+        venueDiv.className = 'venue-status-item';
+        venueDiv.innerHTML = `
+            <span class="venue-name">${venue}</span>
+            <label class="switch">
+                <input type="checkbox" ${venueStatus[venue] ? 'checked' : ''} 
+                       onchange="toggleVenue('${venue}')">
+                <span class="slider"></span>
+            </label>
+            <span class="status-text">${venueStatus[venue] ? 'Open' : 'Closed'}</span>
+        `;
+        container.appendChild(venueDiv);
+    });
+}
+
+function toggleVenue(venue) {
+    venueStatus[venue] = !venueStatus[venue];
+    loadVenueStatus();
+    // Clear bookings for closed venues
+    if (!venueStatus[venue]) {
+        timeSlots.forEach(time => {
+            bookingData[venue][time] = [];
+        });
+    }
+}
+
+// User Membership Management
+function loadUserMembership() {
+    const container = document.getElementById('userMembershipContainer');
+    container.innerHTML = '';
+    
+    Object.entries(userMembership).forEach(([username, data]) => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-membership-item';
+        
+        const now = new Date();
+        const isExpired = data.expiry < now;
+        const timeLeft = data.expiry - now;
+        const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+        
+        userDiv.innerHTML = `
+            <div class="user-info">
+                <span class="username">${username}</span>
+                <span class="membership-type ${data.type}">${data.type.charAt(0).toUpperCase() + data.type.slice(1)} Member</span>
+            </div>
+            <div class="expiry-info ${isExpired ? 'expired' : ''}">
+                <span class="expiry-date">Expires: ${data.expiry.toLocaleDateString()}</span>
+                <span class="time-left">${isExpired ? 'EXPIRED' : daysLeft > 0 ? `${daysLeft} days left` : 'Expires today'}</span>
+            </div>
+            <div class="user-actions">
+                <button onclick="editUserMembership('${username}')" class="edit-btn">Edit</button>
+                <button onclick="deleteUser('${username}')" class="delete-btn">Delete</button>
+            </div>
+        `;
+        container.appendChild(userDiv);
+    });
+}
+
+function editUserMembership(username) {
+    const user = userMembership[username];
+    if (!user) return;
+    
+    const newExpiry = prompt(`Edit expiry date for ${username} (YYYY-MM-DD):`, 
+                            user.expiry.toISOString().split('T')[0]);
+    if (newExpiry) {
+        userMembership[username].expiry = new Date(newExpiry);
+        loadUserMembership();
+    }
+}
+
+function deleteUser(username) {
+    if (confirm(`Are you sure you want to delete ${username}?`)) {
+        delete userMembership[username];
+        loadUserMembership();
+    }
+}
+
+function addNewUser() {
+    const username = prompt('Enter username:');
+    if (!username) return;
+    
+    const type = prompt('Enter membership type (official/temporary):');
+    if (type !== 'official' && type !== 'temporary') {
+        alert('Invalid membership type');
+        return;
+    }
+    
+    const expiry = prompt('Enter expiry date (YYYY-MM-DD):');
+    if (!expiry) return;
+    
+    userMembership[username] = {
+        type: type,
+        expiry: new Date(expiry)
+    };
+    loadUserMembership();
+}
+
+// Message Board Management for Admin
+function showAdminMessageBoard() {
+    document.getElementById('adminMessageBoardOverlay').style.display = 'block';
+    loadAdminMessages();
+}
+
+function closeAdminMessageBoard() {
+    document.getElementById('adminMessageBoardOverlay').style.display = 'none';
+}
+
+function loadAdminMessages() {
+    const content = document.getElementById('adminMessageBoardContent');
+    
+    if (messages.length === 0) {
+        content.innerHTML = '<div class="no-messages">No messages available.</div>';
+        return;
+    }
+
+    const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
+    
+    content.innerHTML = sortedMessages.map(message => `
+        <div class="admin-message-item">
+            <div class="message-header">
+                <span class="message-author">${message.author}</span>
+                <span class="message-date">${message.date}</span>
+                <button onclick="editMessage(${message.id})" class="edit-msg-btn">Edit</button>
+                <button onclick="deleteMessage(${message.id})" class="delete-msg-btn">Delete</button>
+            </div>
+            <div class="message-text">${message.text}</div>
+        </div>
+    `).join('');
+}
+
+function addNewMessage() {
+    const text = prompt('Enter message text:');
+    if (text) {
+        const newMessage = {
+            id: Date.now(),
+            author: currentUser,
+            text: text,
+            date: new Date().toLocaleDateString(),
+            timestamp: new Date()
+        };
+        messages.push(newMessage);
+        loadAdminMessages();
+    }
+}
+
+function editMessage(id) {
+    const message = messages.find(m => m.id === id);
+    if (message) {
+        const newText = prompt('Edit message:', message.text);
+        if (newText !== null) {
+            message.text = newText;
+            loadAdminMessages();
+        }
+    }
+}
+
+function deleteMessage(id) {
+    if (confirm('Are you sure you want to delete this message?')) {
+        const index = messages.findIndex(m => m.id === id);
+        if (index > -1) {
+            messages.splice(index, 1);
+            loadAdminMessages();
+        }
+    }
+}
+
+// QR Code Generation
+function showQRCode() {
+    const registrationForm = `
+Registration Form
+================
+Name: _______________
+Email: ______________
+Membership Type: [ ] Official [ ] Temporary
+Date: ${new Date().toLocaleDateString()}
+
+Please submit this form to the administrator.
+Contact: admin@venue.com
+    `;
+    
+    // Create QR code URL (using a free QR code API)
+    const qrData = encodeURIComponent(registrationForm);
+    const qrCodeURL = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrData}`;
+    
+    document.getElementById('qrCodeImage').src = qrCodeURL;
+    document.getElementById('qrCodeOverlay').style.display = 'block';
+}
+
+function closeQRCode() {
+    document.getElementById('qrCodeOverlay').style.display = 'none';
+}
+
+function closeAdminModals() {
+    closeAdminMessageBoard();
+    closeQRCode();
 }
 
 // Message Board Functions
@@ -214,6 +472,14 @@ function generateTable() {
 function createCellContent(venue, time) {
     const cellDiv = document.createElement('div');
     cellDiv.className = 'cell-content';
+    
+    // Check if venue is closed
+    if (!venueStatus[venue]) {
+        cellDiv.classList.add('venue-closed');
+        cellDiv.innerHTML = '<div class="closed-text">CLOSED</div>';
+        cellDiv.style.cursor = 'not-allowed';
+        return cellDiv;
+    }
     
     const capacity = venueCapacities[venue];
     const booked = bookingData[venue][time].length;
@@ -398,7 +664,6 @@ function filterUpcoming() {
     generateTable();
 }
 
-
 // Add some sample bookings for demonstration
 function addSampleBookings() {
     // Add some random bookings
@@ -409,10 +674,12 @@ function addSampleBookings() {
     bookingData['Field 7']['22:00'] = ['Kate', 'Liam'];
 }
 
-// Handle escape key to close message board
+// Handle escape key to close modals
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeMessageBoard();
+        closeAdminMessageBoard();
+        closeQRCode();
     }
 });
 
