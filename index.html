@@ -96,7 +96,7 @@
                 
                 <div class="user-section">
                     <div class="user-info">
-                        <div class="user-id" id="adminUserDisplay"></div>
+                        <div class="user-id" id="adminUserDisplay">Administrator</div>
                         <div class="current-time" id="adminCurrentTime"></div>
                     </div>
                     <button class="logout-btn" onclick="logout()">Logout</button>
@@ -108,7 +108,9 @@
                 <div class="admin-section">
                     <h3>🏟️ Venue Management</h3>
                     <p class="section-description">Open or close venues for booking</p>
-                    <div id="venueStatusContainer" class="venue-status-grid"></div>
+                    <div id="venueStatusContainer" class="venue-status-grid">
+                        <!-- Venue status items will be loaded here -->
+                    </div>
                 </div>
 
                 <!-- Message Board Management -->
@@ -128,7 +130,9 @@
                     <div class="admin-actions">
                         <button onclick="addNewUser()" class="admin-btn">Add New User</button>
                     </div>
-                    <div id="userMembershipContainer" class="user-membership-grid"></div>
+                    <div id="userMembershipContainer" class="user-membership-grid">
+                        <!-- User membership items will be loaded here -->
+                    </div>
                 </div>
 
                 <!-- QR Code Registration -->
