@@ -733,3 +733,264 @@ input:checked + .slider:before {
     background: #4facfe;
     color: white;
 }
+
+.delete-msg-btn {
+    background: #ff6b6b;
+    color: white;
+}
+
+.edit-msg-btn:hover, .delete-msg-btn:hover {
+    transform: scale(1.05);
+}
+
+/* QR Code Modal Styles */
+.qr-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.qr-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 400px;
+    overflow: hidden;
+    z-index: 1001;
+}
+
+.qr-header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qr-header h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.qr-content {
+    padding: 30px;
+    text-align: center;
+}
+
+.qr-image {
+    max-width: 100%;
+    height: auto;
+    border: 3px solid #f0f0f0;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.qr-instructions {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 15px;
+}
+
+/* Message Board Styles */
+.message-board-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.message-board {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    z-index: 1001;
+}
+
+.message-board-header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message-board-title {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+.message-board-content {
+    padding: 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.message-item {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 5px solid #4facfe;
+    transition: all 0.3s ease;
+}
+
+.message-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #4facfe;
+}
+
+.message-date {
+    font-size: 12px;
+    color: #666;
+}
+
+.message-text {
+    color: #333;
+    line-height: 1.6;
+}
+
+.no-messages {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .filter-section {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .user-section {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+
+    .timetable td {
+        height: 90px;
+    }
+
+    .user-initial-circle {
+        width: 20px;
+        height: 20px;
+        font-size: 8px;
+    }
+
+    .legend {
+        gap: 15px;
+    }
+
+    .message-board {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .message-board-content {
+        padding: 20px;
+    }
+
+    /* Mobile Admin Styles */
+    .admin-content {
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .admin-section {
+        padding: 20px;
+    }
+    
+    .venue-status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .venue-status-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .user-membership-item {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .admin-actions {
+        justify-content: center;
+    }
+    
+    .qr-modal {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .qr-content {
+        padding: 20px;
+    }
+}
