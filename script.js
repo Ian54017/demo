@@ -85,15 +85,32 @@ function login() {
         currentUser = userId;
         isAdmin = adminCheck;
         
+        console.log('Admin check:', adminCheck); // Debug log
+        console.log('User ID:', userId); // Debug log
+        
         if (isAdmin) {
-            document.getElementById('adminUserDisplay').textContent = `Administrator: ${userId}`;
+            console.log('Switching to admin interface'); // Debug log
+            
+            // Update admin display
+            const adminUserDisplay = document.getElementById('adminUserDisplay');
+            if (adminUserDisplay) {
+                adminUserDisplay.textContent = `Administrator: ${userId}`;
+            }
+            
+            // Hide login form and show admin app
             document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'none';
             document.getElementById('adminApp').style.display = 'block';
+            
+            // Initialize admin app
             initializeAdminApp();
         } else {
+            console.log('Switching to user interface'); // Debug log
+            
             document.getElementById('userDisplay').textContent = `User: ${userId}`;
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('adminApp').style.display = 'none';
             initializeApp();
         }
     } else {
@@ -117,10 +134,18 @@ function logout() {
 
 // Admin App Functions
 function initializeAdminApp() {
+    console.log('Initializing admin app'); // Debug log
+    
+    // Make sure booking data is initialized
+    initializeBookingData();
+    
+    // Load admin-specific content
     loadVenueStatus();
     loadUserMembership();
     updateAdminCurrentTime();
     setInterval(updateAdminCurrentTime, 1000);
+    
+    console.log('Admin app initialized'); // Debug log
 }
 
 function updateAdminCurrentTime() {
@@ -129,12 +154,23 @@ function updateAdminCurrentTime() {
     const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
     const dateStr = now.toLocaleDateString(undefined, dateOptions);
     const timeStr = now.toLocaleTimeString(undefined, timeOptions);
-    document.getElementById('adminCurrentTime').textContent = `${dateStr} ${timeStr}`;
+    
+    const adminCurrentTimeElement = document.getElementById('adminCurrentTime');
+    if (adminCurrentTimeElement) {
+        adminCurrentTimeElement.textContent = `${dateStr} ${timeStr}`;
+    }
 }
 
 // Venue Management
 function loadVenueStatus() {
+    console.log('Loading venue status'); // Debug log
     const container = document.getElementById('venueStatusContainer');
+    
+    if (!container) {
+        console.error('venueStatusContainer not found!');
+        return;
+    }
+    
     container.innerHTML = '';
     
     venues.forEach(venue => {
@@ -151,6 +187,8 @@ function loadVenueStatus() {
         `;
         container.appendChild(venueDiv);
     });
+    
+    console.log('Venue status loaded'); // Debug log
 }
 
 function toggleVenue(venue) {
@@ -166,7 +204,14 @@ function toggleVenue(venue) {
 
 // User Membership Management
 function loadUserMembership() {
+    console.log('Loading user membership'); // Debug log
     const container = document.getElementById('userMembershipContainer');
+    
+    if (!container) {
+        console.error('userMembershipContainer not found!');
+        return;
+    }
+    
     container.innerHTML = '';
     
     Object.entries(userMembership).forEach(([username, data]) => {
@@ -194,6 +239,8 @@ function loadUserMembership() {
         `;
         container.appendChild(userDiv);
     });
+    
+    console.log('User membership loaded'); // Debug log
 }
 
 function editUserMembership(username) {
@@ -686,4 +733,12 @@ document.addEventListener('keydown', function(event) {
 // Initialize with sample data when page loads
 window.addEventListener('load', () => {
     addSampleBookings();
+    
+    // Test function to ensure all elements exist
+    console.log('Page loaded, checking elements:');
+    console.log('adminApp exists:', !!document.getElementById('adminApp'));
+    console.log('adminUserDisplay exists:', !!document.getElementById('adminUserDisplay'));
+    console.log('adminCurrentTime exists:', !!document.getElementById('adminCurrentTime'));
+    console.log('venueStatusContainer exists:', !!document.getElementById('venueStatusContainer'));
+    console.log('userMembershipContainer exists:', !!document.getElementById('userMembershipContainer'));
 });
