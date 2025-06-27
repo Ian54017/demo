@@ -438,6 +438,17 @@ body {
 /* Administrator App Styles */
 #adminApp {
     min-height: 100vh;
+    display: none; /* Hidden by default */
+}
+
+#adminApp.show {
+    display: block !important;
+}
+
+.admin-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .admin-title h2 {
