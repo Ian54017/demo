@@ -12,6 +12,22 @@
             <h2>Welcome to Venue Booking</h2>
             <input type="text" id="userIdInput" placeholder="Enter your User ID" maxlength="20">
             
+            <div class="skill-level-section">
+                <label class="skill-level-label">Choose your skill level:</label>
+                <div class="skill-level-options">
+                    <label class="skill-option">
+                        <input type="radio" name="skillLevel" value="beginner" checked>
+                        <span class="skill-circle beginner"></span>
+                        <span class="skill-text">Beginner (Green)</span>
+                    </label>
+                    <label class="skill-option">
+                        <input type="radio" name="skillLevel" value="advanced">
+                        <span class="skill-circle advanced"></span>
+                        <span class="skill-text">Advanced (Red)</span>
+                    </label>
+                </div>
+            </div>
+            
             <div class="admin-checkbox">
                 <label for="adminCheck">
                     <input type="checkbox" id="adminCheck">
@@ -82,6 +98,14 @@
                     <div class="legend-item">
                         <div class="legend-color" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);"></div>
                         <span>Venue Closed</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color skill-circle beginner" style="width: 20px; height: 20px; border-radius: 50%;"></div>
+                        <span>Beginner Player</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color skill-circle advanced" style="width: 20px; height: 20px; border-radius: 50%;"></div>
+                        <span>Advanced Player</span>
                     </div>
                 </div>
             </div>
