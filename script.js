@@ -554,6 +554,11 @@ function createCellContent(venue, time) {
         fillPercentage = Math.min(100, (timeDifference / timeSlotDurationMs) * 100);
         cellDiv.style.setProperty('--fill-percentage', `${fillPercentage}%`);
         cellDiv.classList.add('passed-time-cell');
+        
+        // Clear all bookings for passed time slots
+        if (bookingData[venue] && bookingData[venue][time]) {
+            bookingData[venue][time] = [];
+        }
     }
     
     // Check if venue is closed - apply similar styling to passed time
@@ -572,6 +577,11 @@ function createCellContent(venue, time) {
     const isUserBooked = userBooking && userBooking.venue === venue && userBooking.time === time;
     const isFull = booked >= capacity;
     
+    // If time has passed and user had a booking here, clear their booking
+    if (isPassedTime && isUserBooked) {
+        userBooking = null;
+    }
+    
     // Status indicator
     const statusIndicator = document.createElement('div');
     statusIndicator.className = 'status-indicator';
@@ -588,8 +598,8 @@ function createCellContent(venue, time) {
     capacityInfo.textContent = `${booked}/${capacity}`;
     cellDiv.appendChild(capacityInfo);
     
-    // User initials display
-    if (booked > 0) {
+    // User initials display - only show if not passed time and there are bookings
+    if (booked > 0 && !isPassedTime) {
         const initialsContainer = document.createElement('div');
         initialsContainer.className = 'initials-container';
         
@@ -623,16 +633,16 @@ function createCellContent(venue, time) {
         cellDiv.appendChild(initialsContainer);
     }
     
-    // Participants info
-    if (booked > 0) {
+    // Participants info - only show if not passed time and there are bookings
+    if (booked > 0 && !isPassedTime) {
         const participants = document.createElement('div');
         participants.className = 'participants';
         participants.textContent = `${booked} participant${booked > 1 ? 's' : ''}`;
         cellDiv.appendChild(participants);
     }
     
-    // Cancel button for user's booking
-    if (isUserBooked) {
+    // Cancel button for user's booking - only if not passed time
+    if (isUserBooked && !isPassedTime) {
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'cancel-btn';
         cancelBtn.textContent = 'Cancel';
@@ -645,15 +655,15 @@ function createCellContent(venue, time) {
     
     // Apply styling based on status
     const cell = cellDiv.parentNode || cellDiv;
-    if (isUserBooked) {
+    if (isUserBooked && !isPassedTime) {
         cellDiv.classList.add('user-booked-cell');
-    } else if (isFull) {
+    } else if (isFull && !isPassedTime) {
         cellDiv.classList.add('full-cell');
-    } else if (booked > 0) {
+    } else if (booked > 0 && !isPassedTime) {
         cellDiv.classList.add('booked-cell');
     }
     
-    // Click handler for booking
+    // Click handler for booking - only if not full, not user booked, and not passed time
     if (!isFull && !isUserBooked && !isPassedTime) {
         cellDiv.onclick = () => bookSlot(venue, time);
     } else if (isPassedTime) {
@@ -773,7 +783,7 @@ function addSampleBookings() {
     bookingData['Field 2']['19:20'] = ['Bob', 'Carol', 'Dave'];
     bookingData['Field 2']['23:00'] = ['Bob', 'Carol', 'Dave']; // Specific booking you requested
     bookingData['Field 3']['20:00'] = ['Eve', 'Frank'];
-    bookingData['Field 5']['21:00'] = ['Grace', 'Henry', 'Ivy', 'Jack'];
+    bookingData['Field 5']['23:00'] = ['Grace', 'Henry', 'Ivy', 'Jack']; // Changed from 21:00 to 23:00
     bookingData['Field 7']['22:00'] = ['Kate', 'Liam'];
     bookingData['Field 4']['20:40'] = ['Sarah', 'Mike']; // Additional sample booking
     bookingData['Field 6']['21:40'] = ['Tom']; // Additional sample booking
