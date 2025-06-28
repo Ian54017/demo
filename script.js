@@ -40,8 +40,12 @@ userMembership['Temporary Member A'].expiry.setHours(23, 59, 59, 999);
 // Booking data: venue -> time -> [users]
 let bookingData = {};
 let currentUser = '';
+let currentUserSkillLevel = 'beginner'; // Default to beginner
 let userBooking = null; // {venue: '', time: ''}
 let isAdmin = false;
+
+// User skill levels storage
+let userSkillLevels = {};
 
 // Message board data
 let messages = [
@@ -80,13 +84,19 @@ function initializeBookingData() {
 function login() {
     const userId = document.getElementById('userIdInput').value.trim();
     const adminCheck = document.getElementById('adminCheck').checked;
+    const skillLevel = document.querySelector('input[name="skillLevel"]:checked').value;
     
     if (userId) {
         currentUser = userId;
+        currentUserSkillLevel = skillLevel;
         isAdmin = adminCheck;
+        
+        // Store user's skill level
+        userSkillLevels[userId] = skillLevel;
         
         console.log('Admin check:', adminCheck); // Debug log
         console.log('User ID:', userId); // Debug log
+        console.log('Skill Level:', skillLevel); // Debug log
         
         if (isAdmin) {
             console.log('Switching to admin interface'); // Debug log
@@ -107,7 +117,9 @@ function login() {
         } else {
             console.log('Switching to user interface'); // Debug log
             
-            document.getElementById('userDisplay').textContent = `User: ${userId}`;
+            const skillText = skillLevel === 'beginner' ? 'Beginner' : 'Advanced';
+            const skillColor = skillLevel === 'beginner' ? '🟢' : '🔴';
+            document.getElementById('userDisplay').textContent = `User: ${userId} ${skillColor} ${skillText}`;
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             document.getElementById('adminApp').style.display = 'none';
@@ -121,10 +133,15 @@ function login() {
 // Logout function
 function logout() {
     currentUser = '';
+    currentUserSkillLevel = 'beginner';
     userBooking = null;
     isAdmin = false;
     document.getElementById('userIdInput').value = '';
     document.getElementById('adminCheck').checked = false;
+    
+    // Reset skill level selection to beginner
+    document.querySelector('input[name="skillLevel"][value="beginner"]').checked = true;
+    
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('adminApp').style.display = 'none';
@@ -575,13 +592,17 @@ function createCellContent(venue, time) {
             const initialsCircle = document.createElement('div');
             initialsCircle.className = 'user-initial-circle';
             
+            // Get user's skill level and apply appropriate class
+            const userSkillLevel = userSkillLevels[user] || 'beginner';
+            initialsCircle.classList.add(userSkillLevel);
+            
             // Highlight current user's circle
             if (user === currentUser) {
                 initialsCircle.classList.add('current-user');
             }
             
             initialsCircle.textContent = getUserInitials(user);
-            initialsCircle.title = user; // Tooltip showing full username
+            initialsCircle.title = `${user} (${userSkillLevel === 'beginner' ? 'Beginner' : 'Advanced'})`; // Enhanced tooltip
             
             // Position circles to avoid overlap
             const angle = (index * 360) / Math.max(capacity, booked);
@@ -713,12 +734,27 @@ function filterUpcoming() {
 
 // Add some sample bookings for demonstration
 function addSampleBookings() {
-    // Add some random bookings
+    // Add some random bookings with skill levels
     bookingData['Field 1']['19:00'] = ['John', 'Alice'];
     bookingData['Field 2']['19:20'] = ['Bob', 'Carol', 'Dave'];
     bookingData['Field 3']['20:00'] = ['Eve', 'Frank'];
     bookingData['Field 5']['21:00'] = ['Grace', 'Henry', 'Ivy', 'Jack'];
     bookingData['Field 7']['22:00'] = ['Kate', 'Liam'];
+    
+    // Set sample skill levels for demonstration
+    userSkillLevels['John'] = 'beginner';
+    userSkillLevels['Alice'] = 'advanced';
+    userSkillLevels['Bob'] = 'beginner';
+    userSkillLevels['Carol'] = 'advanced';
+    userSkillLevels['Dave'] = 'beginner';
+    userSkillLevels['Eve'] = 'advanced';
+    userSkillLevels['Frank'] = 'beginner';
+    userSkillLevels['Grace'] = 'advanced';
+    userSkillLevels['Henry'] = 'beginner';
+    userSkillLevels['Ivy'] = 'advanced';
+    userSkillLevels['Jack'] = 'beginner';
+    userSkillLevels['Kate'] = 'advanced';
+    userSkillLevels['Liam'] = 'beginner';
 }
 
 // Handle escape key to close modals
