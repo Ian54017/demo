@@ -695,6 +695,25 @@ function createCellContent(venue, time) {
 
 // Book a slot
 function bookSlot(venue, time) {
+    // Check if time slot is still bookable (not more than 20 minutes past start)
+    const now = new Date();
+    const [slotHour, slotMinute] = time.split(':').map(Number);
+    const slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), slotHour, slotMinute, 0);
+    const timeDifference = now.getTime() - slotTime.getTime();
+    const timeSlotDurationMs = 20 * 60 * 1000; // 20 minutes in milliseconds
+    
+    // Prevent booking if more than 20 minutes have passed
+    if (timeDifference >= timeSlotDurationMs) {
+        alert('Cannot book this slot - it has already finished.');
+        return;
+    }
+    
+    // Check if venue is closed
+    if (!venueStatus[venue]) {
+        alert('This venue is currently closed.');
+        return;
+    }
+    
     if (userBooking) {
         if (confirm('You already have a booking. Cancel current booking to make a new one?')) {
             cancelBooking();
@@ -711,9 +730,10 @@ function bookSlot(venue, time) {
         userBooking = { venue, time };
         generateTable();
         
-        // Show success message
+        // Show success message with timing info
+        const timeStatus = timeDifference > 0 ? ' (joining ongoing session)' : '';
         setTimeout(() => {
-            alert(`Successfully booked ${venue} at ${time}`);
+            alert(`Successfully booked ${venue} at ${time}${timeStatus}`);
         }, 100);
     } else {
         alert('This slot is fully booked!');
