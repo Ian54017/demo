@@ -453,10 +453,13 @@ function updateCurrentTime() {
 // Initialize the application
 function initializeApp() {
     initializeBookingData();
+    addSampleBookings(); // Make sure sample bookings are loaded first
     populateFilters();
     generateTable();
     updateCurrentTime(); // Initial call
     setInterval(updateCurrentTime, 1000); // Update every second
+    
+    console.log('App initialized with sample bookings'); // Debug log
 }
 
 // Populate filter dropdowns
@@ -537,20 +540,6 @@ function createCellContent(venue, time) {
     const cellDiv = document.createElement('div');
     cellDiv.className = 'cell-content';
     
-    // Check if venue is closed
-    if (!venueStatus[venue]) {
-        cellDiv.classList.add('venue-closed');
-        cellDiv.innerHTML = '<div class="closed-text">CLOSED</div>';
-        cellDiv.style.cursor = 'not-allowed';
-        return cellDiv;
-    }
-    
-    const capacity = venueCapacities[venue];
-    const booked = bookingData[venue][time].length;
-    const bookedUsers = bookingData[venue][time];
-    const isUserBooked = userBooking && userBooking.venue === venue && userBooking.time === time;
-    const isFull = booked >= capacity;
-
     const now = new Date();
     const [slotHour, slotMinute] = time.split(':').map(Number);
     const slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), slotHour, slotMinute, 0);
@@ -566,6 +555,22 @@ function createCellContent(venue, time) {
         cellDiv.style.setProperty('--fill-percentage', `${fillPercentage}%`);
         cellDiv.classList.add('passed-time-cell');
     }
+    
+    // Check if venue is closed - apply similar styling to passed time
+    if (!venueStatus[venue]) {
+        cellDiv.classList.add('venue-closed');
+        // Apply similar fill effect as passed time
+        cellDiv.style.setProperty('--fill-percentage', '100%');
+        cellDiv.innerHTML = '<div class="closed-text">CLOSED</div>';
+        cellDiv.style.cursor = 'not-allowed';
+        return cellDiv;
+    }
+    
+    const capacity = venueCapacities[venue];
+    const booked = bookingData[venue][time].length;
+    const bookedUsers = bookingData[venue][time];
+    const isUserBooked = userBooking && userBooking.venue === venue && userBooking.time === time;
+    const isFull = booked >= capacity;
     
     // Status indicator
     const statusIndicator = document.createElement('div');
@@ -720,26 +725,58 @@ function getFilteredTimes() {
 
 // Filter table
 function filterTable() {
-    document.getElementById('venueFilter').dataset.filterUpcoming = 'false'; // Reset upcoming filter
+    const venueFilter = document.getElementById('venueFilter');
+    venueFilter.dataset.filterUpcoming = 'false'; // Reset upcoming filter
+    
+    // Reset button text and style
+    const filterBtn = document.querySelector('.filter-btn');
+    filterBtn.textContent = 'Filter Upcoming Available';
+    filterBtn.style.background = 'rgba(255, 255, 255, 0.3)';
+    
     generateTable();
 }
 
 // Filter upcoming available cells
 function filterUpcoming() {
-    document.getElementById('venueFilter').dataset.filterUpcoming = 'true';
-    document.getElementById('venueFilter').value = ""; // Clear venue filter
-    document.getElementById('timeFilter').value = ""; // Clear time filter
+    const venueFilter = document.getElementById('venueFilter');
+    const isCurrentlyFiltered = venueFilter.dataset.filterUpcoming === 'true';
+    
+    if (isCurrentlyFiltered) {
+        // Toggle off - reset filters
+        venueFilter.dataset.filterUpcoming = 'false';
+        venueFilter.value = ""; // Clear venue filter
+        document.getElementById('timeFilter').value = ""; // Clear time filter
+        
+        // Update button text to show it's not active
+        const filterBtn = document.querySelector('.filter-btn');
+        filterBtn.textContent = 'Filter Upcoming Available';
+        filterBtn.style.background = 'rgba(255, 255, 255, 0.3)';
+    } else {
+        // Toggle on - apply upcoming filter
+        venueFilter.dataset.filterUpcoming = 'true';
+        venueFilter.value = ""; // Clear venue filter
+        document.getElementById('timeFilter').value = ""; // Clear time filter
+        
+        // Update button text to show it's active
+        const filterBtn = document.querySelector('.filter-btn');
+        filterBtn.textContent = 'Clear Upcoming Filter';
+        filterBtn.style.background = 'rgba(255, 255, 255, 0.5)';
+    }
+    
     generateTable();
 }
 
 // Add some sample bookings for demonstration
 function addSampleBookings() {
-    // Add some random bookings with skill levels
+    // Add some random bookings with skill levels - including the specific one you requested
     bookingData['Field 1']['19:00'] = ['John', 'Alice'];
     bookingData['Field 2']['19:20'] = ['Bob', 'Carol', 'Dave'];
+    bookingData['Field 2']['23:00'] = ['Bob', 'Carol', 'Dave']; // Specific booking you requested
     bookingData['Field 3']['20:00'] = ['Eve', 'Frank'];
     bookingData['Field 5']['21:00'] = ['Grace', 'Henry', 'Ivy', 'Jack'];
     bookingData['Field 7']['22:00'] = ['Kate', 'Liam'];
+    bookingData['Field 4']['20:40'] = ['Sarah', 'Mike']; // Additional sample booking
+    bookingData['Field 6']['21:40'] = ['Tom']; // Additional sample booking
     
     // Set sample skill levels for demonstration
     userSkillLevels['John'] = 'beginner';
@@ -755,6 +792,12 @@ function addSampleBookings() {
     userSkillLevels['Jack'] = 'beginner';
     userSkillLevels['Kate'] = 'advanced';
     userSkillLevels['Liam'] = 'beginner';
+    userSkillLevels['Sarah'] = 'advanced';
+    userSkillLevels['Mike'] = 'beginner';
+    userSkillLevels['Tom'] = 'advanced';
+    
+    console.log('Sample bookings loaded:', bookingData); // Debug log
+    console.log('User skill levels loaded:', userSkillLevels); // Debug log
 }
 
 // Handle escape key to close modals
