@@ -217,46 +217,60 @@ body {
 }
 
 .user-initial-circle.current-user {
-    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-    border: 2px solid #ff6b6b;
+    border: 3px solid #FFC107;
     animation: pulse 2s infinite;
-    color: #333;
     font-weight: 900;
+}
+
+/* Skill level colors for user circles */
+.user-initial-circle.beginner {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.user-initial-circle.advanced {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+}
+
+/* Current user styling with skill level colors */
+.user-initial-circle.current-user.beginner {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+    color: white !important;
+}
+
+.user-initial-circle.current-user.advanced {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%) !important;
+    color: white !important;
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(255, 107, 107, 0.7);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(255, 193, 7, 0.7);
     }
     70% {
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(255, 107, 107, 0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(255, 193, 7, 0);
     }
     100% {
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(255, 107, 107, 0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(255, 193, 7, 0);
     }
 }
 
-/* Alternative colors for different users */
-.user-initial-circle:nth-child(1) {
+/* Alternative colors for different users (fallback) */
+.user-initial-circle:nth-child(1):not(.beginner):not(.advanced) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.user-initial-circle:nth-child(2) {
+.user-initial-circle:nth-child(2):not(.beginner):not(.advanced) {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
-.user-initial-circle:nth-child(3) {
+.user-initial-circle:nth-child(3):not(.beginner):not(.advanced) {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-.user-initial-circle:nth-child(4) {
+.user-initial-circle:nth-child(4):not(.beginner):not(.advanced) {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
-/* Override for current user regardless of position */
-.user-initial-circle.current-user {
-    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
-    color: #333 !important;
 }
 
 .participants {
@@ -408,7 +422,82 @@ body {
     box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
 }
 
-/* Admin Checkbox Styles */
+/* Skill Level Selection Styles */
+.skill-level-section {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.skill-level-label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.skill-level-options {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.skill-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 10px 15px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: rgba(79, 172, 254, 0.05);
+}
+
+.skill-option:hover {
+    background: rgba(79, 172, 254, 0.1);
+    border-color: rgba(79, 172, 254, 0.3);
+    transform: translateY(-2px);
+}
+
+.skill-option input[type="radio"] {
+    display: none;
+}
+
+.skill-option input[type="radio"]:checked + .skill-circle {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.3);
+}
+
+.skill-option input[type="radio"]:checked ~ .skill-text {
+    font-weight: 700;
+    color: #4facfe;
+}
+
+.skill-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.skill-circle.beginner {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.skill-circle.advanced {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.skill-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.3s ease;
+}
 .admin-checkbox {
     margin: 20px 0;
     display: flex;
