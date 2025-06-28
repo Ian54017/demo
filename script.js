@@ -548,6 +548,7 @@ function createCellContent(venue, time) {
 
     let fillPercentage = 0;
     let isPassedTime = false;
+    let isFullyPassed = false;
 
     if (timeDifference > 0) { // If current time is past the slot start time
         isPassedTime = true;
@@ -555,9 +556,19 @@ function createCellContent(venue, time) {
         cellDiv.style.setProperty('--fill-percentage', `${fillPercentage}%`);
         cellDiv.classList.add('passed-time-cell');
         
-        // Clear all bookings for passed time slots
-        if (bookingData[venue] && bookingData[venue][time]) {
-            bookingData[venue][time] = [];
+        // Check if more than 20 minutes have passed (reached next timeslot)
+        if (timeDifference >= timeSlotDurationMs) {
+            isFullyPassed = true;
+            
+            // Clear all bookings for fully passed time slots (more than 20 mins)
+            if (bookingData[venue] && bookingData[venue][time]) {
+                bookingData[venue][time] = [];
+            }
+            
+            // Clear user booking if it was in a fully passed slot
+            if (userBooking && userBooking.venue === venue && userBooking.time === time) {
+                userBooking = null;
+            }
         }
     }
     
@@ -577,11 +588,6 @@ function createCellContent(venue, time) {
     const isUserBooked = userBooking && userBooking.venue === venue && userBooking.time === time;
     const isFull = booked >= capacity;
     
-    // If time has passed and user had a booking here, clear their booking
-    if (isPassedTime && isUserBooked) {
-        userBooking = null;
-    }
-    
     // Status indicator
     const statusIndicator = document.createElement('div');
     statusIndicator.className = 'status-indicator';
@@ -598,8 +604,8 @@ function createCellContent(venue, time) {
     capacityInfo.textContent = `${booked}/${capacity}`;
     cellDiv.appendChild(capacityInfo);
     
-    // User initials display - only show if not passed time and there are bookings
-    if (booked > 0 && !isPassedTime) {
+    // User initials display - show if there are bookings and not fully passed (>20 mins)
+    if (booked > 0 && !isFullyPassed) {
         const initialsContainer = document.createElement('div');
         initialsContainer.className = 'initials-container';
         
@@ -633,16 +639,29 @@ function createCellContent(venue, time) {
         cellDiv.appendChild(initialsContainer);
     }
     
-    // Participants info - only show if not passed time and there are bookings
-    if (booked > 0 && !isPassedTime) {
+    // Participants info - show if there are bookings and not fully passed (>20 mins)
+    if (booked > 0 && !isFullyPassed) {
         const participants = document.createElement('div');
         participants.className = 'participants';
         participants.textContent = `${booked} participant${booked > 1 ? 's' : ''}`;
         cellDiv.appendChild(participants);
     }
     
-    // Cancel button for user's booking - only if not passed time
-    if (isUserBooked && !isPassedTime) {
+    // Cancel button for user's booking - only available if less than 20 mins have passed
+    if (isUserBooked && !isFullyPassed && isPassedTime) {
+        // Time has passed but less than 20 mins - disable cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'cancel-btn disabled';
+        cancelBtn.textContent = 'Cannot Cancel';
+        cancelBtn.style.background = '#ccc';
+        cancelBtn.style.cursor = 'not-allowed';
+        cancelBtn.onclick = (e) => {
+            e.stopPropagation();
+            alert('Cannot cancel booking - time slot has already started');
+        };
+        cellDiv.appendChild(cancelBtn);
+    } else if (isUserBooked && !isPassedTime) {
+        // Normal cancel button for future bookings
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'cancel-btn';
         cancelBtn.textContent = 'Cancel';
@@ -654,19 +673,20 @@ function createCellContent(venue, time) {
     }
     
     // Apply styling based on status
-    const cell = cellDiv.parentNode || cellDiv;
-    if (isUserBooked && !isPassedTime) {
+    if (isUserBooked && !isFullyPassed) {
         cellDiv.classList.add('user-booked-cell');
-    } else if (isFull && !isPassedTime) {
+    } else if (isFull && !isFullyPassed) {
         cellDiv.classList.add('full-cell');
-    } else if (booked > 0 && !isPassedTime) {
+    } else if (booked > 0 && !isFullyPassed) {
         cellDiv.classList.add('booked-cell');
     }
     
-    // Click handler for booking - only if not full, not user booked, and not passed time
-    if (!isFull && !isUserBooked && !isPassedTime) {
+    // Click handler for booking
+    if (!isFull && !isUserBooked && !isFullyPassed) {
+        // Allow booking even if time has passed but less than 20 mins
         cellDiv.onclick = () => bookSlot(venue, time);
-    } else if (isPassedTime) {
+    } else if (isFullyPassed) {
+        // Fully passed slots (>20 mins) are not clickable
         cellDiv.style.cursor = 'not-allowed';
     }
     
