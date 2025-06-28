@@ -335,6 +335,18 @@ body {
     transform: scale(1.05);
 }
 
+.cancel-btn.disabled {
+    background: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.cancel-btn.disabled:hover {
+    background: #ccc !important;
+    transform: none !important;
+}
+
 .status-indicator {
     position: absolute;
     top: 5px;
