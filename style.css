@@ -1019,6 +1019,179 @@ input:checked + .slider:before {
     padding: 40px;
 }
 
+/* Time Management Styles */
+
+/* Time controls container */
+.time-controls-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+/* Time control buttons */
+.time-control-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.time-control-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.time-control-btn.paused {
+    background: rgba(255, 107, 107, 0.3);
+}
+
+.time-control-btn.paused:hover {
+    background: rgba(255, 107, 107, 0.4);
+}
+
+/* Time check status display */
+#timeCheckStatus {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.time-check-active {
+    background: rgba(46, 213, 115, 0.2);
+    color: white;
+}
+
+.time-check-paused {
+    background: rgba(255, 107, 107, 0.2);
+    color: white;
+}
+
+/* Time passed styling for time cells */
+.time-passed {
+    background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%) !important;
+    color: #757575 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.time-passed::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 0, 0, 0.05) 10px,
+        rgba(0, 0, 0, 0.05) 20px
+    );
+    pointer-events: none;
+}
+
+/* Frozen cell styling */
+.cell-content.time-frozen {
+    opacity: 0.5;
+    background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%) !important;
+    position: relative;
+    cursor: not-allowed !important;
+}
+
+.cell-content.time-frozen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 0, 0, 0.05) 10px,
+        rgba(0, 0, 0, 0.05) 20px
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Past indicator */
+.past-indicator {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: #757575;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 20;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Disable interactions for frozen cells */
+.cell-content.time-frozen .user-initial-circle {
+    pointer-events: none;
+}
+
+.cell-content.time-frozen .cancel-btn {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+/* Time check notification */
+.time-check-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    font-weight: 600;
+}
+
+.time-check-notification.fade-out {
+    animation: slideOut 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .header {
@@ -1100,5 +1273,30 @@ input:checked + .slider:before {
     
     .qr-content {
         padding: 20px;
+    }
+    
+    /* Mobile time controls */
+    .time-controls-container {
+        width: 100%;
+        align-items: center;
+        margin: 10px 0;
+    }
+    
+    .time-control-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    #timeCheckStatus {
+        font-size: 11px;
+        text-align: center;
+    }
+    
+    .time-check-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        font-size: 14px;
+        padding: 12px 16px;
     }
 }
