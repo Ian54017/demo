@@ -499,15 +499,17 @@ function generateTable() {
     const filteredVenues = getFilteredVenues();
     let filteredTimes = getFilteredTimes();
 
-    // If "Filter Upcoming Available" is active, adjust filteredTimes
+    // If "Filter Upcoming Available" is active, adjust filteredTimes (no time logic, just show all)
     if (document.getElementById('venueFilter').dataset.filterUpcoming === 'true') {
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        
+        // Just filter to show available slots (not full and venue open)
         filteredTimes = filteredTimes.filter(time => {
-            const [hour, minute] = time.split(':').map(Number);
-            const slotMinutes = hour * 60 + minute;
-            return slotMinutes >= currentMinutes;
+            return filteredVenues.some(venue => {
+                const isVenueOpen = venueStatus[venue];
+                const currentBookings = bookingData[venue][time].length;
+                const capacity = venueCapacities[venue];
+                const isNotFull = currentBookings < capacity;
+                return isVenueOpen && isNotFull;
+            });
         });
     }
 
@@ -539,38 +541,6 @@ function generateTable() {
 function createCellContent(venue, time) {
     const cellDiv = document.createElement('div');
     cellDiv.className = 'cell-content';
-    
-    const now = new Date();
-    const [slotHour, slotMinute] = time.split(':').map(Number);
-    const slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), slotHour, slotMinute, 0);
-    const timeDifference = now.getTime() - slotTime.getTime(); // Difference in milliseconds
-    const timeSlotDurationMs = 20 * 60 * 1000; // 20 minutes in milliseconds
-
-    let fillPercentage = 0;
-    let isPassedTime = false;
-    let isFullyPassed = false;
-
-    if (timeDifference > 0) { // If current time is past the slot start time
-        isPassedTime = true;
-        fillPercentage = Math.min(100, (timeDifference / timeSlotDurationMs) * 100);
-        cellDiv.style.setProperty('--fill-percentage', `${fillPercentage}%`);
-        cellDiv.classList.add('passed-time-cell');
-        
-        // Check if more than 20 minutes have passed (reached next timeslot)
-        if (timeDifference >= timeSlotDurationMs) {
-            isFullyPassed = true;
-            
-            // Clear all bookings for fully passed time slots (more than 20 mins)
-            if (bookingData[venue] && bookingData[venue][time]) {
-                bookingData[venue][time] = [];
-            }
-            
-            // Clear user booking if it was in a fully passed slot
-            if (userBooking && userBooking.venue === venue && userBooking.time === time) {
-                userBooking = null;
-            }
-        }
-    }
     
     // Check if venue is closed - apply similar styling to passed time
     if (!venueStatus[venue]) {
@@ -604,8 +574,8 @@ function createCellContent(venue, time) {
     capacityInfo.textContent = `${booked}/${capacity}`;
     cellDiv.appendChild(capacityInfo);
     
-    // User initials display - show if there are bookings and not fully passed (>20 mins)
-    if (booked > 0 && !isFullyPassed) {
+    // User initials display
+    if (booked > 0) {
         const initialsContainer = document.createElement('div');
         initialsContainer.className = 'initials-container';
         
@@ -639,29 +609,16 @@ function createCellContent(venue, time) {
         cellDiv.appendChild(initialsContainer);
     }
     
-    // Participants info - show if there are bookings and not fully passed (>20 mins)
-    if (booked > 0 && !isFullyPassed) {
+    // Participants info
+    if (booked > 0) {
         const participants = document.createElement('div');
         participants.className = 'participants';
         participants.textContent = `${booked} participant${booked > 1 ? 's' : ''}`;
         cellDiv.appendChild(participants);
     }
     
-    // Cancel button for user's booking - only available if less than 20 mins have passed
-    if (isUserBooked && !isFullyPassed && isPassedTime) {
-        // Time has passed but less than 20 mins - disable cancel button
-        const cancelBtn = document.createElement('button');
-        cancelBtn.className = 'cancel-btn disabled';
-        cancelBtn.textContent = 'Cannot Cancel';
-        cancelBtn.style.background = '#ccc';
-        cancelBtn.style.cursor = 'not-allowed';
-        cancelBtn.onclick = (e) => {
-            e.stopPropagation();
-            alert('Cannot cancel booking - time slot has already started');
-        };
-        cellDiv.appendChild(cancelBtn);
-    } else if (isUserBooked && !isPassedTime) {
-        // Normal cancel button for future bookings
+    // Cancel button for user's booking
+    if (isUserBooked) {
         const cancelBtn = document.createElement('button');
         cancelBtn.className = 'cancel-btn';
         cancelBtn.textContent = 'Cancel';
@@ -673,21 +630,17 @@ function createCellContent(venue, time) {
     }
     
     // Apply styling based on status
-    if (isUserBooked && !isFullyPassed) {
+    if (isUserBooked) {
         cellDiv.classList.add('user-booked-cell');
-    } else if (isFull && !isFullyPassed) {
+    } else if (isFull) {
         cellDiv.classList.add('full-cell');
-    } else if (booked > 0 && !isFullyPassed) {
+    } else if (booked > 0) {
         cellDiv.classList.add('booked-cell');
     }
     
     // Click handler for booking
-    if (!isFull && !isUserBooked && !isFullyPassed) {
-        // Allow booking even if time has passed but less than 20 mins
+    if (!isFull && !isUserBooked) {
         cellDiv.onclick = () => bookSlot(venue, time);
-    } else if (isFullyPassed) {
-        // Fully passed slots (>20 mins) are not clickable
-        cellDiv.style.cursor = 'not-allowed';
     }
     
     return cellDiv;
@@ -695,19 +648,6 @@ function createCellContent(venue, time) {
 
 // Book a slot
 function bookSlot(venue, time) {
-    // Check if time slot is still bookable (not more than 20 minutes past start)
-    const now = new Date();
-    const [slotHour, slotMinute] = time.split(':').map(Number);
-    const slotTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), slotHour, slotMinute, 0);
-    const timeDifference = now.getTime() - slotTime.getTime();
-    const timeSlotDurationMs = 20 * 60 * 1000; // 20 minutes in milliseconds
-    
-    // Prevent booking if more than 20 minutes have passed
-    if (timeDifference >= timeSlotDurationMs) {
-        alert('Cannot book this slot - it has already finished.');
-        return;
-    }
-    
     // Check if venue is closed
     if (!venueStatus[venue]) {
         alert('This venue is currently closed.');
@@ -730,10 +670,9 @@ function bookSlot(venue, time) {
         userBooking = { venue, time };
         generateTable();
         
-        // Show success message with timing info
-        const timeStatus = timeDifference > 0 ? ' (joining ongoing session)' : '';
+        // Show success message
         setTimeout(() => {
-            alert(`Successfully booked ${venue} at ${time}${timeStatus}`);
+            alert(`Successfully booked ${venue} at ${time}`);
         }, 100);
     } else {
         alert('This slot is fully booked!');
