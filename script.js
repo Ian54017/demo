@@ -58,6 +58,10 @@ let messages = [
     }
 ];
 
+// Time management variables
+let timeCheckInterval = null;
+let isTimeManagementActive = true;
+
 // Function to get user initials
 function getUserInitials(username) {
     if (!username) return '';
@@ -69,6 +73,245 @@ function getUserInitials(username) {
         return words.slice(0, 2).map(word => word.charAt(0).toUpperCase()).join('');
     }
 }
+
+// ===== TIME MANAGEMENT FUNCTIONS =====
+
+// Function to parse time string (HH:MM) to minutes since midnight
+function parseTimeToMinutes(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+// Function to get current time in minutes since midnight
+function getCurrentTimeInMinutes() {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+}
+
+// Main function to manage cell states based on time
+function manageCellStatesByTime() {
+    if (!isTimeManagementActive) return;
+    
+    const tableBody = document.getElementById('tableBody');
+    if (!tableBody) return;
+    
+    const currentMinutes = getCurrentTimeInMinutes();
+    const rows = tableBody.getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        // Get the time from the first cell (time column)
+        const timeCell = row.cells[0];
+        if (!timeCell) continue;
+        
+        const timeSlot = timeCell.textContent.trim();
+        const slotMinutes = parseTimeToMinutes(timeSlot);
+        
+        // Determine if this time slot has passed
+        const isPassed = currentMinutes >= slotMinutes;
+        
+        // Apply styling to the time cell itself
+        if (isPassed) {
+            timeCell.classList.add('time-passed');
+        } else {
+            timeCell.classList.remove('time-passed');
+        }
+        
+        // Process all venue cells in this row (skip first cell which is time)
+        for (let i = 1; i < row.cells.length; i++) {
+            const cell = row.cells[i];
+            const cellContent = cell.querySelector('.cell-content');
+            
+            if (cellContent) {
+                if (isPassed) {
+                    freezeCell(cellContent, cell);
+                } else {
+                    unfreezeCell(cellContent, cell);
+                }
+            }
+        }
+    }
+    
+    // Update time check status display
+    updateTimeCheckStatus();
+}
+
+// Function to freeze/disable a cell
+function freezeCell(cellContent, cell) {
+    // Add frozen class for styling
+    cellContent.classList.add('time-frozen');
+    
+    // Disable click events
+    const originalOnclick = cellContent.onclick;
+    cellContent.setAttribute('data-original-onclick', 'true');
+    cellContent.onclick = null;
+    cellContent.style.cursor = 'not-allowed';
+    
+    // Disable any cancel buttons in the cell
+    const cancelBtn = cellContent.querySelector('.cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.classList.add('disabled');
+        cancelBtn.disabled = true;
+    }
+    
+    // Add a "PAST" indicator if it doesn't exist
+    if (!cellContent.querySelector('.past-indicator')) {
+        const pastIndicator = document.createElement('div');
+        pastIndicator.className = 'past-indicator';
+        pastIndicator.textContent = 'PAST';
+        cellContent.appendChild(pastIndicator);
+    }
+}
+
+// Function to unfreeze/enable a cell
+function unfreezeCell(cellContent, cell) {
+    // Remove frozen class
+    cellContent.classList.remove('time-frozen');
+    
+    // Re-enable click events if appropriate
+    const isVenueClosed = cellContent.classList.contains('venue-closed');
+    const isFull = cellContent.classList.contains('full-cell');
+    const isUserBooked = cellContent.classList.contains('user-booked-cell');
+    
+    if (!isVenueClosed && !isFull && !isUserBooked) {
+        cellContent.style.cursor = 'pointer';
+        // Restore the original onclick if it was removed
+        if (cellContent.getAttribute('data-original-onclick')) {
+            const venue = venues[cell.cellIndex - 1]; // -1 because first column is time
+            const time = cell.parentElement.cells[0].textContent.trim();
+            cellContent.onclick = () => bookSlot(venue, time);
+            cellContent.removeAttribute('data-original-onclick');
+        }
+    }
+    
+    // Re-enable cancel buttons
+    const cancelBtn = cellContent.querySelector('.cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.classList.remove('disabled');
+        cancelBtn.disabled = false;
+    }
+    
+    // Remove "Past" indicator
+    const pastIndicator = cellContent.querySelector('.past-indicator');
+    if (pastIndicator) {
+        pastIndicator.remove();
+    }
+}
+
+// Function to manually trigger time check
+function manualTimeCheck() {
+    manageCellStatesByTime();
+    
+    // Show confirmation message
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    showTimeCheckNotification(`Time check performed: ${timeStr}`);
+}
+
+// Toggle time management on/off
+function toggleTimeManagement() {
+    isTimeManagementActive = !isTimeManagementActive;
+    const toggleBtn = document.getElementById('toggleTimeManagementBtn');
+    
+    if (isTimeManagementActive) {
+        toggleBtn.textContent = '⏸️ Pause Time Check';
+        toggleBtn.classList.remove('paused');
+        manageCellStatesByTime();
+    } else {
+        toggleBtn.textContent = '▶️ Resume Time Check';
+        toggleBtn.classList.add('paused');
+        // Clear all time-based freezing when paused
+        const tableBody = document.getElementById('tableBody');
+        if (tableBody) {
+            const cellContents = tableBody.querySelectorAll('.cell-content.time-frozen');
+            cellContents.forEach(cellContent => {
+                unfreezeCell(cellContent, cellContent.parentElement);
+            });
+        }
+    }
+    
+    updateTimeCheckStatus();
+}
+
+// Update time check status display
+function updateTimeCheckStatus() {
+    const statusDisplay = document.getElementById('timeCheckStatus');
+    if (statusDisplay) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        statusDisplay.textContent = isTimeManagementActive ? 
+            `Time check active (${timeStr})` : 
+            'Time check paused';
+        statusDisplay.className = isTimeManagementActive ? 'time-check-active' : 'time-check-paused';
+    }
+}
+
+// Show notification
+function showTimeCheckNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'time-check-notification';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Initialize time management
+function initializeTimeManagement() {
+    // Perform initial check
+    manageCellStatesByTime();
+    
+    // Set up automatic checks every minute
+    if (timeCheckInterval) {
+        clearInterval(timeCheckInterval);
+    }
+    timeCheckInterval = setInterval(manageCellStatesByTime, 60000);
+    
+    // Add time management controls if they don't exist
+    addTimeManagementControls();
+}
+
+// Add time management controls to the interface
+function addTimeManagementControls() {
+    const userSection = document.querySelector('#mainApp .user-section');
+    if (userSection && !document.getElementById('timeCheckBtn')) {
+        // Create a container for time controls
+        const timeControlsContainer = document.createElement('div');
+        timeControlsContainer.className = 'time-controls-container';
+        
+        // Add manual check button
+        const timeCheckBtn = document.createElement('button');
+        timeCheckBtn.id = 'timeCheckBtn';
+        timeCheckBtn.className = 'time-control-btn';
+        timeCheckBtn.textContent = '🕐 Check Time';
+        timeCheckBtn.onclick = manualTimeCheck;
+        
+        // Add toggle button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'toggleTimeManagementBtn';
+        toggleBtn.className = 'time-control-btn';
+        toggleBtn.textContent = '⏸️ Pause Time Check';
+        toggleBtn.onclick = toggleTimeManagement;
+        
+        // Add status display
+        const statusDisplay = document.createElement('div');
+        statusDisplay.id = 'timeCheckStatus';
+        statusDisplay.className = 'time-check-active';
+        
+        timeControlsContainer.appendChild(timeCheckBtn);
+        timeControlsContainer.appendChild(toggleBtn);
+        timeControlsContainer.appendChild(statusDisplay);
+        
+        // Insert before the logout button
+        const logoutBtn = userSection.querySelector('.logout-btn');
+        userSection.insertBefore(timeControlsContainer, logoutBtn);
+    }
+}
+
+// ===== END TIME MANAGEMENT FUNCTIONS =====
 
 // Initialize booking data
 function initializeBookingData() {
@@ -141,6 +384,12 @@ function logout() {
     
     // Reset skill level selection to beginner
     document.querySelector('input[name="skillLevel"][value="beginner"]').checked = true;
+    
+    // Clear time check interval
+    if (timeCheckInterval) {
+        clearInterval(timeCheckInterval);
+        timeCheckInterval = null;
+    }
     
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('mainApp').style.display = 'none';
@@ -459,7 +708,10 @@ function initializeApp() {
     updateCurrentTime(); // Initial call
     setInterval(updateCurrentTime, 1000); // Update every second
     
-    console.log('App initialized with sample bookings'); // Debug log
+    // Initialize time management
+    initializeTimeManagement();
+    
+    console.log('App initialized with sample bookings and time management'); // Debug log
 }
 
 // Populate filter dropdowns
@@ -535,6 +787,9 @@ function generateTable() {
         
         body.appendChild(row);
     });
+    
+    // Apply time management after table is generated
+    setTimeout(manageCellStatesByTime, 100);
 }
 
 // Create cell content
@@ -654,6 +909,14 @@ function bookSlot(venue, time) {
         return;
     }
     
+    // Check if time has passed
+    const currentMinutes = getCurrentTimeInMinutes();
+    const slotMinutes = parseTimeToMinutes(time);
+    if (currentMinutes >= slotMinutes && isTimeManagementActive) {
+        alert('Cannot book a time slot that has already passed.');
+        return;
+    }
+    
     if (userBooking) {
         if (confirm('You already have a booking. Cancel current booking to make a new one?')) {
             cancelBooking();
@@ -683,6 +946,15 @@ function bookSlot(venue, time) {
 function cancelBooking() {
     if (userBooking) {
         const { venue, time } = userBooking;
+        
+        // Check if time has passed
+        const currentMinutes = getCurrentTimeInMinutes();
+        const slotMinutes = parseTimeToMinutes(time);
+        if (currentMinutes >= slotMinutes && isTimeManagementActive) {
+            alert('Cannot cancel a booking for a time slot that has already passed.');
+            return;
+        }
+        
         const bookings = bookingData[venue][time];
         const userIndex = bookings.indexOf(currentUser);
         
@@ -810,3 +1082,15 @@ window.addEventListener('load', () => {
     console.log('venueStatusContainer exists:', !!document.getElementById('venueStatusContainer'));
     console.log('userMembershipContainer exists:', !!document.getElementById('userMembershipContainer'));
 });
+
+// Export functions for external use or testing
+window.timeManagement = {
+    manageCellStatesByTime,
+    manualTimeCheck,
+    toggleTimeManagement,
+    freezeCell,
+    unfreezeCell,
+    parseTimeToMinutes,
+    getCurrentTimeInMinutes,
+    isTimeManagementActive: () => isTimeManagementActive
+};
