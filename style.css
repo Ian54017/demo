@@ -295,17 +295,9 @@ body {
     cursor: not-allowed;
 }
 
-.passed-time-cell {
-    background: linear-gradient(to top, #ccc var(--fill-percentage, 0%), transparent var(--fill-percentage, 0%));
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-}
-
-/* Venue Closed Styling - aligned with passed time styling */
+/* Venue Closed Styling */
 .venue-closed {
-    background: linear-gradient(to top, #ff6b6b var(--fill-percentage, 100%), transparent var(--fill-percentage, 100%)) !important;
-    background-size: 100% 100% !important;
-    background-repeat: no-repeat !important;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%) !important;
     color: white !important;
 }
 
