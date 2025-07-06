@@ -431,19 +431,6 @@ body {
 }
 
 /* Skill Level Selection Styles */
-.skill-level-section {
-    margin: 20px 0;
-    text-align: center;
-}
-
-.skill-level-label {
-    display: block;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
 .skill-level-options {
     display: flex;
     justify-content: center;
@@ -610,38 +597,256 @@ body {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-/* Venue Status Grid */
+/* Enhanced Venue Status Styles */
 .venue-status-grid {
     display: grid;
-    gap: 15px;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 }
 
 .venue-status-item {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
+    flex-direction: column;
+    padding: 20px;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 10px;
+    border-radius: 12px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    gap: 15px;
+}
+
+.venue-status-item.enhanced {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 .venue-status-item:hover {
     border-color: #4facfe;
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.venue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .venue-name {
+    font-weight: 700;
+    color: #333;
+    font-size: 18px;
+}
+
+.venue-quick-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.venue-quick-status.open {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.venue-quick-status.closed {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+}
+
+.venue-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.permanent-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: rgba(79, 172, 254, 0.05);
+    border-radius: 8px;
+}
+
+.status-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.date-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.date-btn {
     flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Date Manager Modal */
+.date-manager-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.date-manager-modal {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.date-manager-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.date-manager-header h3 {
+    margin: 0;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-manager-content {
+    padding: 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.add-date-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(79, 172, 254, 0.05);
+    border-radius: 10px;
+}
+
+.add-date-section label {
     font-weight: 600;
     color: #333;
 }
 
-.status-text {
+.add-date-section input[type="date"] {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.add-date-section input[type="date"]:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.2);
+}
+
+.add-date-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
     font-weight: 600;
-    min-width: 60px;
+    transition: all 0.3s ease;
+}
+
+.add-date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+}
+
+.closed-dates-list h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.no-dates {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+}
+
+.closed-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(255, 107, 107, 0.05);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    transition: all 0.3s ease;
+}
+
+.closed-date-item:hover {
+    background: rgba(255, 107, 107, 0.1);
+    transform: translateX(5px);
+}
+
+.closed-date-item span {
+    font-weight: 600;
+    color: #ff6b6b;
+}
+
+.remove-date-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.remove-date-btn:hover {
+    transform: scale(1.05);
 }
 
 /* Toggle Switch Styles */
@@ -1025,8 +1230,56 @@ input:checked + .slider:before {
 .time-controls-container {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     align-items: flex-end;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+/* Time adjustment controls */
+.time-adjust-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.time-adjust-label {
+    font-weight: 600;
+    color: white;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.time-adjust-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    min-width: 45px;
+}
+
+.time-adjust-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.time-adjust-btn.reset {
+    background: rgba(255, 193, 7, 0.25);
+    min-width: 60px;
+}
+
+.time-adjust-btn.reset:hover {
+    background: rgba(255, 193, 7, 0.35);
 }
 
 /* Time control buttons */
@@ -1040,6 +1293,7 @@ input:checked + .slider:before {
     font-weight: 600;
     transition: all 0.3s ease;
     font-size: 14px;
+    width: 100%;
 }
 
 .time-control-btn:hover {
@@ -1062,6 +1316,8 @@ input:checked + .slider:before {
     border-radius: 6px;
     font-weight: 600;
     transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
 }
 
 .time-check-active {
@@ -1072,6 +1328,19 @@ input:checked + .slider:before {
 .time-check-paused {
     background: rgba(255, 107, 107, 0.2);
     color: white;
+}
+
+/* Time offset display */
+.time-offset-display {
+    background: rgba(255, 193, 7, 0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    display: none;
 }
 
 /* Time passed styling for time cells */
@@ -1251,9 +1520,32 @@ input:checked + .slider:before {
     }
     
     .venue-status-item {
+        padding: 15px;
+    }
+    
+    .venue-header {
         flex-direction: column;
-        text-align: center;
         gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .venue-controls {
+        width: 100%;
+    }
+    
+    .permanent-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .date-controls {
+        width: 100%;
+    }
+    
+    .date-btn {
+        font-size: 13px;
+        padding: 8px 12px;
     }
     
     .user-membership-item {
@@ -1278,8 +1570,27 @@ input:checked + .slider:before {
     /* Mobile time controls */
     .time-controls-container {
         width: 100%;
-        align-items: center;
+        align-items: stretch;
         margin: 10px 0;
+        padding: 12px;
+    }
+    
+    .time-adjust-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .time-adjust-label {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    
+    .time-adjust-btn {
+        font-size: 12px;
+        padding: 5px 10px;
+        min-width: 40px;
     }
     
     .time-control-btn {
@@ -1289,7 +1600,11 @@ input:checked + .slider:before {
     
     #timeCheckStatus {
         font-size: 11px;
-        text-align: center;
+    }
+    
+    .time-offset-display {
+        font-size: 12px;
+        padding: 5px 10px;
     }
     
     .time-check-notification {
@@ -1299,4 +1614,45 @@ input:checked + .slider:before {
         font-size: 14px;
         padding: 12px 16px;
     }
+    
+    /* Date manager modal mobile */
+    .date-manager-modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .date-manager-content {
+        padding: 20px;
+    }
+    
+    .add-date-section {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .add-date-section label {
+        width: 100%;
+    }
+    
+    .add-date-section input[type="date"] {
+        width: 100%;
+    }
+    
+    .add-date-btn {
+        width: 100%;
+    }
+}-section {
+    margin: 20px 0;
+    text-align: center;
 }
+
+.skill-level-label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.skill-level
