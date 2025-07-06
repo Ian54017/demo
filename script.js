@@ -15,17 +15,17 @@ const venueCapacities = {
     'Field 9': 2
 };
 
-// Venue status (open/closed)
+// Venue status (open/closed) - Enhanced with date-based status
 let venueStatus = {
-    'Field 1': true,
-    'Field 2': true,
-    'Field 3': true,
-    'Field 4': true,
-    'Field 5': true,
-    'Field 6': true,
-    'Field 7': true,
-    'Field 8': true,
-    'Field 9': true
+    'Field 1': { open: true, closedDates: [] },
+    'Field 2': { open: true, closedDates: [] },
+    'Field 3': { open: true, closedDates: [] },
+    'Field 4': { open: true, closedDates: [] },
+    'Field 5': { open: true, closedDates: [] },
+    'Field 6': { open: true, closedDates: [] },
+    'Field 7': { open: true, closedDates: [] },
+    'Field 8': { open: true, closedDates: [] },
+    'Field 9': { open: true, closedDates: [] }
 };
 
 // User membership data
@@ -61,6 +61,7 @@ let messages = [
 // Time management variables
 let timeCheckInterval = null;
 let isTimeManagementActive = true;
+let timeOffset = 0; // Time offset in minutes for testing
 
 // Function to get user initials
 function getUserInitials(username) {
@@ -82,10 +83,52 @@ function parseTimeToMinutes(timeStr) {
     return hours * 60 + minutes;
 }
 
-// Function to get current time in minutes since midnight
+// Function to get current time in minutes since midnight (with offset)
 function getCurrentTimeInMinutes() {
     const now = new Date();
+    now.setMinutes(now.getMinutes() + timeOffset);
     return now.getHours() * 60 + now.getMinutes();
+}
+
+// Function to get adjusted current time
+function getAdjustedTime() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + timeOffset);
+    return now;
+}
+
+// Function to adjust time offset
+function adjustTimeOffset(minutes) {
+    timeOffset += minutes;
+    manageCellStatesByTime();
+    updateTimeDisplay();
+    showTimeCheckNotification(`Time adjusted by ${minutes} minutes. Current offset: ${timeOffset} minutes`);
+}
+
+// Function to reset time to actual time
+function resetTimeOffset() {
+    timeOffset = 0;
+    manageCellStatesByTime();
+    updateTimeDisplay();
+    showTimeCheckNotification('Time reset to actual system time');
+}
+
+// Update time display with offset indicator
+function updateTimeDisplay() {
+    const adjustedTime = getAdjustedTime();
+    const timeStr = adjustedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const offsetDisplay = document.getElementById('timeOffsetDisplay');
+    if (offsetDisplay) {
+        if (timeOffset !== 0) {
+            const sign = timeOffset > 0 ? '+' : '';
+            offsetDisplay.textContent = `Testing Time: ${timeStr} (${sign}${timeOffset} min)`;
+            offsetDisplay.style.display = 'block';
+        } else {
+            offsetDisplay.textContent = '';
+            offsetDisplay.style.display = 'none';
+        }
+    }
 }
 
 // Main function to manage cell states based on time
@@ -197,16 +240,6 @@ function unfreezeCell(cellContent, cell) {
     }
 }
 
-// Function to manually trigger time check
-function manualTimeCheck() {
-    manageCellStatesByTime();
-    
-    // Show confirmation message
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    showTimeCheckNotification(`Time check performed: ${timeStr}`);
-}
-
 // Toggle time management on/off
 function toggleTimeManagement() {
     isTimeManagementActive = !isTimeManagementActive;
@@ -236,8 +269,8 @@ function toggleTimeManagement() {
 function updateTimeCheckStatus() {
     const statusDisplay = document.getElementById('timeCheckStatus');
     if (statusDisplay) {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const adjustedTime = getAdjustedTime();
+        const timeStr = adjustedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         statusDisplay.textContent = isTimeManagementActive ? 
             `Time check active (${timeStr})` : 
             'Time check paused';
@@ -277,17 +310,51 @@ function initializeTimeManagement() {
 // Add time management controls to the interface
 function addTimeManagementControls() {
     const userSection = document.querySelector('#mainApp .user-section');
-    if (userSection && !document.getElementById('timeCheckBtn')) {
+    if (userSection && !document.getElementById('timeControlsContainer')) {
         // Create a container for time controls
         const timeControlsContainer = document.createElement('div');
+        timeControlsContainer.id = 'timeControlsContainer';
         timeControlsContainer.className = 'time-controls-container';
         
-        // Add manual check button
-        const timeCheckBtn = document.createElement('button');
-        timeCheckBtn.id = 'timeCheckBtn';
-        timeCheckBtn.className = 'time-control-btn';
-        timeCheckBtn.textContent = '🕐 Check Time';
-        timeCheckBtn.onclick = manualTimeCheck;
+        // Add time adjustment controls
+        const timeAdjustContainer = document.createElement('div');
+        timeAdjustContainer.className = 'time-adjust-container';
+        
+        const adjustLabel = document.createElement('span');
+        adjustLabel.className = 'time-adjust-label';
+        adjustLabel.textContent = 'Test Time:';
+        
+        const minusHourBtn = document.createElement('button');
+        minusHourBtn.className = 'time-adjust-btn';
+        minusHourBtn.textContent = '-1h';
+        minusHourBtn.onclick = () => adjustTimeOffset(-60);
+        
+        const minusMinBtn = document.createElement('button');
+        minusMinBtn.className = 'time-adjust-btn';
+        minusMinBtn.textContent = '-10m';
+        minusMinBtn.onclick = () => adjustTimeOffset(-10);
+        
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'time-adjust-btn reset';
+        resetBtn.textContent = 'Reset';
+        resetBtn.onclick = resetTimeOffset;
+        
+        const plusMinBtn = document.createElement('button');
+        plusMinBtn.className = 'time-adjust-btn';
+        plusMinBtn.textContent = '+10m';
+        plusMinBtn.onclick = () => adjustTimeOffset(10);
+        
+        const plusHourBtn = document.createElement('button');
+        plusHourBtn.className = 'time-adjust-btn';
+        plusHourBtn.textContent = '+1h';
+        plusHourBtn.onclick = () => adjustTimeOffset(60);
+        
+        timeAdjustContainer.appendChild(adjustLabel);
+        timeAdjustContainer.appendChild(minusHourBtn);
+        timeAdjustContainer.appendChild(minusMinBtn);
+        timeAdjustContainer.appendChild(resetBtn);
+        timeAdjustContainer.appendChild(plusMinBtn);
+        timeAdjustContainer.appendChild(plusHourBtn);
         
         // Add toggle button
         const toggleBtn = document.createElement('button');
@@ -301,9 +368,15 @@ function addTimeManagementControls() {
         statusDisplay.id = 'timeCheckStatus';
         statusDisplay.className = 'time-check-active';
         
-        timeControlsContainer.appendChild(timeCheckBtn);
+        // Add offset display
+        const offsetDisplay = document.createElement('div');
+        offsetDisplay.id = 'timeOffsetDisplay';
+        offsetDisplay.className = 'time-offset-display';
+        
+        timeControlsContainer.appendChild(timeAdjustContainer);
         timeControlsContainer.appendChild(toggleBtn);
         timeControlsContainer.appendChild(statusDisplay);
+        timeControlsContainer.appendChild(offsetDisplay);
         
         // Insert before the logout button
         const logoutBtn = userSection.querySelector('.logout-btn');
@@ -312,6 +385,15 @@ function addTimeManagementControls() {
 }
 
 // ===== END TIME MANAGEMENT FUNCTIONS =====
+
+// Check if venue is open on a specific date
+function isVenueOpenOnDate(venue, date) {
+    const venueInfo = venueStatus[venue];
+    if (!venueInfo.open) return false;
+    
+    const dateStr = date.toDateString();
+    return !venueInfo.closedDates.includes(dateStr);
+}
 
 // Initialize booking data
 function initializeBookingData() {
@@ -391,6 +473,9 @@ function logout() {
         timeCheckInterval = null;
     }
     
+    // Reset time offset
+    timeOffset = 0;
+    
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('adminApp').style.display = 'none';
@@ -427,7 +512,7 @@ function updateAdminCurrentTime() {
     }
 }
 
-// Venue Management
+// Venue Management - Enhanced
 function loadVenueStatus() {
     console.log('Loading venue status'); // Debug log
     const container = document.getElementById('venueStatusContainer');
@@ -440,16 +525,35 @@ function loadVenueStatus() {
     container.innerHTML = '';
     
     venues.forEach(venue => {
+        const venueInfo = venueStatus[venue];
         const venueDiv = document.createElement('div');
-        venueDiv.className = 'venue-status-item';
+        venueDiv.className = 'venue-status-item enhanced';
+        
+        const today = new Date().toDateString();
+        const isOpenToday = venueInfo.open && !venueInfo.closedDates.includes(today);
+        
         venueDiv.innerHTML = `
-            <span class="venue-name">${venue}</span>
-            <label class="switch">
-                <input type="checkbox" ${venueStatus[venue] ? 'checked' : ''} 
-                       onchange="toggleVenue('${venue}')">
-                <span class="slider"></span>
-            </label>
-            <span class="status-text">${venueStatus[venue] ? 'Open' : 'Closed'}</span>
+            <div class="venue-header">
+                <span class="venue-name">${venue}</span>
+                <div class="venue-quick-status ${isOpenToday ? 'open' : 'closed'}">
+                    ${isOpenToday ? 'Open Today' : 'Closed Today'}
+                </div>
+            </div>
+            <div class="venue-controls">
+                <div class="permanent-status">
+                    <label class="switch">
+                        <input type="checkbox" ${venueInfo.open ? 'checked' : ''} 
+                               onchange="toggleVenuePermanent('${venue}')">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="status-label">Permanently ${venueInfo.open ? 'Open' : 'Closed'}</span>
+                </div>
+                <div class="date-controls">
+                    <button class="date-btn" onclick="showVenueDateManager('${venue}')">
+                        📅 Manage Dates (${venueInfo.closedDates.length} closed)
+                    </button>
+                </div>
+            </div>
         `;
         container.appendChild(venueDiv);
     });
@@ -457,14 +561,80 @@ function loadVenueStatus() {
     console.log('Venue status loaded'); // Debug log
 }
 
-function toggleVenue(venue) {
-    venueStatus[venue] = !venueStatus[venue];
+function toggleVenuePermanent(venue) {
+    venueStatus[venue].open = !venueStatus[venue].open;
     loadVenueStatus();
-    // Clear bookings for closed venues
-    if (!venueStatus[venue]) {
-        timeSlots.forEach(time => {
-            bookingData[venue][time] = [];
-        });
+}
+
+function showVenueDateManager(venue) {
+    const venueInfo = venueStatus[venue];
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'date-manager-overlay';
+    modal.innerHTML = `
+        <div class="date-manager-modal">
+            <div class="date-manager-header">
+                <h3>📅 Manage Closed Dates - ${venue}</h3>
+                <button class="close-btn" onclick="closeDateManager()">✕</button>
+            </div>
+            <div class="date-manager-content">
+                <div class="add-date-section">
+                    <label>Add Closed Date:</label>
+                    <input type="date" id="newClosedDate" min="${new Date().toISOString().split('T')[0]}">
+                    <button class="add-date-btn" onclick="addClosedDate('${venue}')">Add Date</button>
+                </div>
+                <div class="closed-dates-list">
+                    <h4>Closed Dates:</h4>
+                    ${venueInfo.closedDates.length === 0 ? 
+                        '<p class="no-dates">No specific closed dates</p>' :
+                        venueInfo.closedDates.map(dateStr => `
+                            <div class="closed-date-item">
+                                <span>${new Date(dateStr).toLocaleDateString()}</span>
+                                <button class="remove-date-btn" onclick="removeClosedDate('${venue}', '${dateStr}')">Remove</button>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function closeDateManager() {
+    const modal = document.querySelector('.date-manager-overlay');
+    if (modal) modal.remove();
+}
+
+function addClosedDate(venue) {
+    const dateInput = document.getElementById('newClosedDate');
+    if (dateInput.value) {
+        const date = new Date(dateInput.value);
+        const dateStr = date.toDateString();
+        
+        if (!venueStatus[venue].closedDates.includes(dateStr)) {
+            venueStatus[venue].closedDates.push(dateStr);
+            // Clear bookings for this venue on this date
+            timeSlots.forEach(time => {
+                bookingData[venue][time] = [];
+            });
+            loadVenueStatus();
+            closeDateManager();
+            showVenueDateManager(venue); // Reopen with updated list
+        } else {
+            alert('This date is already in the closed dates list.');
+        }
+    }
+}
+
+function removeClosedDate(venue, dateStr) {
+    const index = venueStatus[venue].closedDates.indexOf(dateStr);
+    if (index > -1) {
+        venueStatus[venue].closedDates.splice(index, 1);
+        loadVenueStatus();
+        closeDateManager();
+        showVenueDateManager(venue); // Reopen with updated list
     }
 }
 
@@ -646,6 +816,7 @@ function closeQRCode() {
 function closeAdminModals() {
     closeAdminMessageBoard();
     closeQRCode();
+    closeDateManager();
 }
 
 // Message Board Functions
@@ -691,7 +862,7 @@ function loadMessages() {
 
 // Function to display current time
 function updateCurrentTime() {
-    const now = new Date();
+    const now = getAdjustedTime(); // Use adjusted time
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
     const dateStr = now.toLocaleDateString(undefined, dateOptions);
@@ -756,7 +927,7 @@ function generateTable() {
         // Just filter to show available slots (not full and venue open)
         filteredTimes = filteredTimes.filter(time => {
             return filteredVenues.some(venue => {
-                const isVenueOpen = venueStatus[venue];
+                const isVenueOpen = isVenueOpenOnDate(venue, new Date());
                 const currentBookings = bookingData[venue][time].length;
                 const capacity = venueCapacities[venue];
                 const isNotFull = currentBookings < capacity;
@@ -797,11 +968,12 @@ function createCellContent(venue, time) {
     const cellDiv = document.createElement('div');
     cellDiv.className = 'cell-content';
     
-    // Check if venue is closed - apply similar styling to passed time
-    if (!venueStatus[venue]) {
+    // Check if venue is closed today
+    const today = new Date();
+    const isOpenToday = isVenueOpenOnDate(venue, today);
+    
+    if (!isOpenToday) {
         cellDiv.classList.add('venue-closed');
-        // Apply similar fill effect as passed time
-        cellDiv.style.setProperty('--fill-percentage', '100%');
         cellDiv.innerHTML = '<div class="closed-text">CLOSED</div>';
         cellDiv.style.cursor = 'not-allowed';
         return cellDiv;
@@ -903,8 +1075,8 @@ function createCellContent(venue, time) {
 
 // Book a slot
 function bookSlot(venue, time) {
-    // Check if venue is closed
-    if (!venueStatus[venue]) {
+    // Check if venue is closed today
+    if (!isVenueOpenOnDate(venue, new Date())) {
         alert('This venue is currently closed.');
         return;
     }
@@ -1067,6 +1239,7 @@ document.addEventListener('keydown', function(event) {
         closeMessageBoard();
         closeAdminMessageBoard();
         closeQRCode();
+        closeDateManager();
     }
 });
 
@@ -1086,11 +1259,14 @@ window.addEventListener('load', () => {
 // Export functions for external use or testing
 window.timeManagement = {
     manageCellStatesByTime,
-    manualTimeCheck,
+    adjustTimeOffset,
+    resetTimeOffset,
     toggleTimeManagement,
     freezeCell,
     unfreezeCell,
     parseTimeToMinutes,
     getCurrentTimeInMinutes,
-    isTimeManagementActive: () => isTimeManagementActive
+    getAdjustedTime,
+    isTimeManagementActive: () => isTimeManagementActive,
+    getTimeOffset: () => timeOffset
 };
